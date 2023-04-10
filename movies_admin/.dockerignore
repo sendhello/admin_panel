@@ -1,0 +1,7 @@
+.env
+.env.example
+.gitignore
+.dockerignore
+requirements-dev.txt
+Dockerfile
+README.md
