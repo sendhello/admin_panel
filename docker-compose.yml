@@ -21,26 +21,6 @@ services:
       timeout: 5s
       retries: 5
 
-  sqlite_to_postgres:
-    container_name: sqlite_to_postgres
-    hostname: sqlite_to_postgres
-    build: ./sqlite_to_postgres
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: movies_database
-      DB_USER: app
-      DB_PASSWORD: 123qwe
-      SQLITE_DB: db.sqlite
-      LOAD_PACKAGE_SIZE: 50
-    volumes:
-      - ./db.sqlite:/opt/app/db.sqlite
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - network
-
   django:
     container_name: django
     hostname: django
@@ -63,6 +43,32 @@ services:
       - static_volume:/opt/app/static
     depends_on:
       postgres:
+        condition: service_healthy
+    networks:
+      - network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/admin" ]
+      interval: 60s
+      timeout: 10s
+      retries: 10
+      start_period: 5s
+
+  sqlite_to_postgres:
+    container_name: sqlite_to_postgres
+    hostname: sqlite_to_postgres
+    build: ./sqlite_to_postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: movies_database
+      DB_USER: app
+      DB_PASSWORD: 123qwe
+      SQLITE_DB: db.sqlite
+      LOAD_PACKAGE_SIZE: 50
+    volumes:
+      - ./sqlite_to_postgres/db.sqlite:/opt/app/db.sqlite
+    depends_on:
+      django:
         condition: service_healthy
     networks:
       - network

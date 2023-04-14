@@ -13,7 +13,7 @@ ENV DJANGO_SETTINGS_MODULE='config.settings' \
 WORKDIR $APP_PATH
 RUN mkdir -p $APP_PATH/static
 
-RUN apt-get update && apt-get install -y --no-install-recommends gettext
+RUN apt-get update && apt-get install -y --no-install-recommends gettext curl
 
 COPY ./requirements.txt .
 COPY ./entrypoint.sh .

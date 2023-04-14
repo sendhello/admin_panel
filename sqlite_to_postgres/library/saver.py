@@ -1,10 +1,11 @@
 import logging
 
 import psycopg2
-from local_typing import TABLES_TYPE
 from psycopg2.extensions import connection as _connection
 from psycopg2.extensions import cursor as _cursor
 from psycopg2.extras import DictCursor
+
+from .local_typing import TABLES_TYPE
 
 logger = logging.getLogger(__name__)
 

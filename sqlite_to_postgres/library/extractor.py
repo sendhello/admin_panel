@@ -3,9 +3,8 @@ import os
 import sqlite3
 from typing import Iterator
 
-from local_typing import TABLES_TYPE
-
-from sqlite_to_postgres.schemas import FilmWork, Genre, GenreFilmWork, Person, PersonFilmWork
+from .local_typing import TABLES_TYPE
+from .schemas import FilmWork, Genre, GenreFilmWork, Person, PersonFilmWork
 
 logger = logging.getLogger(__name__)
 
