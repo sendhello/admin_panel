@@ -105,6 +105,20 @@ services:
     networks:
       - network
 
+  elasticsearch:
+    container_name: elasticsearch
+    hostname: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: false
+    depends_on:
+      - sqlite_to_postgres
+    ports:
+      - "9200:9200"
+    networks:
+      - network
+
 volumes:
   postgres_data:
   static_volume:
