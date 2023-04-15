@@ -38,16 +38,3 @@ def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10):
         return inner
 
     return func_wrapper
-
-
-@backoff()
-def fu():
-    print('---')
-    raise ValueError('www')
-
-
-fu()
-
-import json
-
-json.dump()

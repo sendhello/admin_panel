@@ -2,7 +2,7 @@ import inspect
 import re
 import sys
 from json import JSONDecodeError
-from etl.state import State, RedisStorage
+from etl.library.state import State, RedisStorage
 
 
 # TODO: добавьте import своей реализации классов State и RedisStorage

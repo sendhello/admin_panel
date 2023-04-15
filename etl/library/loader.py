@@ -1,3 +1,6 @@
+import json
+import os
+from library.backoff import backoff
 import requests
 from schemas.models import Movie
 from schemas.index import Index, IndexData
@@ -8,12 +11,16 @@ class ElasticsearchLoader:
         protocol = 'https' if ssl else 'http'
         self.url = f'{protocol}://{host}:{port}'
 
+    @backoff()
     def _get(self, path: str):
         return requests.get(f'{self.url}/{path}')
 
+    @backoff()
     def _put(self, path: str, data: dict = None):
-        return requests.put(f'{self.url}/{path}', data)
+        headers = {'Content-type': 'application/json'}
+        return requests.put(f'{self.url}/{path}', data=json.dumps(data), headers=headers)
 
+    @backoff()
     def _post(self, path: str, data: dict | str = None, json=None):
         headers = {'Content-type': 'application/x-ndjson'}
         return requests.post(f'{self.url}/{path}', data=data, json=json, headers=headers)

@@ -1,7 +1,7 @@
 import logging
 import os
 from typing import Any, Iterator
-
+from library.backoff import backoff
 import psycopg2
 from psycopg2.extensions import connection as _connection
 from psycopg2.extensions import cursor as _cursor
@@ -37,6 +37,7 @@ class PostgresExtractor:
         self.dsn = dsn
         self.connection = None
 
+    @backoff()
     def __enter__(self) -> 'PostgresExtractor':
         try:
             self.connection = psycopg2.connect(**self.dsn, cursor_factory=DictCursor)
@@ -44,6 +45,7 @@ class PostgresExtractor:
 
         except Exception as e:
             logger.error(f'Connection error with Postgres DB: {e}')
+            raise e
 
         return self
 
