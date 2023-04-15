@@ -73,6 +73,30 @@ services:
     networks:
       - network
 
+  etl:
+    container_name: etl
+    hostname: etl
+    build: ./etl
+    environment:
+      DEBUG: True
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: movies_database
+      DB_USER: app
+      DB_PASSWORD: 123qwe
+      ES_HOST: elasticsearch
+      ES_SSL: False
+      USE_REDIS: True
+      REDIS_HOST: redis
+      LOAD_PACKAGE_SIZE: 5000
+      SLEEP_TIME: 30
+    volumes:
+      - ./sqlite_to_postgres/db.sqlite:/opt/app/db.sqlite
+    depends_on:
+      - sqlite_to_postgres
+    networks:
+      - network
+
   nginx:
     container_name: nginx
     hostname: nginx
@@ -120,11 +144,24 @@ services:
       - "9200:9200"
     networks:
       - network
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:7.2-rc1
+    environment:
+      ALLOW_EMPTY_PASSWORD: yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6377:6379"
+    networks:
+      - network
 
 volumes:
   postgres_data:
   static_volume:
   elasticsearch_data:
+  redis_data:
 
 networks:
   network:

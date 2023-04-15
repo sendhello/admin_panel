@@ -4,6 +4,10 @@ from utils import backoff
 import requests
 from schemas.models import Movie
 from schemas.index import Index, IndexData
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class ElasticsearchLoader:
@@ -46,4 +50,5 @@ class ElasticsearchLoader:
 
     def load_movies(self, movies: list[Movie]):
         data = ''.join(self._create_bulk(movie, 'movies') for movie in movies)
-        res = self._post('_bulk', data=data)
+        self._post('_bulk', data=data)
+        logger.info(f"Sent {len(movies)} movies to index")

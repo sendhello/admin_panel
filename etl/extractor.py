@@ -132,7 +132,7 @@ class PostgresExtractor:
                 last_modified = state.get_state(state_name)
 
             if last_modified is not None:
-                logger.info(f"Check update {obj} after {last_modified}")
+                logger.info(f"Check update of {obj.value} after {last_modified}")
                 extract_method = getattr(self, extract_method_by_modified_type[state_name])
 
                 for data in extract_method(last_modified):
