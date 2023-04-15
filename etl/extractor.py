@@ -1,19 +1,24 @@
 import logging
 import os
+from datetime import datetime, timezone
 from typing import Any, Iterator
-from utils import backoff
+
 import psycopg2
+from constants import ExtractObject, extract_method_by_modified_type, state_name_map
 from psycopg2.extensions import connection as _connection
 from psycopg2.extensions import cursor as _cursor
 from psycopg2.extras import DictCursor
-import logging
-from datetime import datetime, timezone
+from schemas import SourceId, SourceMovie
+from sql import (
+    FILM_WORK_BY_IDS_SQL,
+    FILM_WORK_BY_LAST_MODIFIED_SQL,
+    FILM_WORK_IDS_BY_GENRE_IDS_SQL,
+    FILM_WORK_IDS_BY_PERSON_IDS_SQL,
+    GENRE_BY_LAST_MODIFIED_SQL,
+    PERSON_BY_LAST_MODIFIED_SQL,
+)
 from state import State
-from typing import Iterator
-from constants import extract_method_by_modified_type, state_name_map, ExtractObject
-from sql import FILM_WORK_BY_IDS_SQL, FILM_WORK_BY_LAST_MODIFIED_SQL, PERSON_BY_LAST_MODIFIED_SQL, \
-    GENRE_BY_LAST_MODIFIED_SQL, FILM_WORK_IDS_BY_PERSON_IDS_SQL, FILM_WORK_IDS_BY_GENRE_IDS_SQL
-from schemas.sources import SourceMovie, SourceId
+from utils import backoff
 
 logger = logging.getLogger(__name__)
 

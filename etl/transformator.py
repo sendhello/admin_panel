@@ -1,9 +1,4 @@
-from schemas.sources import SourceMovie
-from pydantic import BaseModel, Field
-from uuid import UUID
-from schemas.sources import RoleType
-from typing import Dict
-from schemas.models import Movie, Person
+from schemas import Movie, Person, RoleType, SourceMovie
 
 
 class Transformator:

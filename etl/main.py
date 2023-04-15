@@ -1,16 +1,15 @@
-import os
-from redis import Redis
-from dotenv import load_dotenv
-from state import State, RedisStorage, JsonFileStorage
-from extractor import PostgresExtractor
-from datetime import datetime, timezone
-import time
 import json
 import logging
-from loader import ElasticsearchLoader
-from constants import StateName, extract_method_by_modified_type, state_name_map, ExtractObject
-from transformator import Transformator
+import os
+import time
+from datetime import datetime, timezone
 
+from dotenv import load_dotenv
+from extractor import PostgresExtractor
+from loader import ElasticsearchLoader
+from redis import Redis
+from state import JsonFileStorage, RedisStorage, State
+from transformator import Transformator
 
 load_dotenv()
 debug = os.getenv('DEBUG', 'False') in ('True', 'true')
@@ -30,7 +29,7 @@ if __name__ == '__main__':
     es_host = os.getenv('ES_HOST', '127.0.0.1')
     es_port = os.getenv('ES_PORT', '9200')
     es_ssl = os.getenv('ES_SSL', 'True') in ('True', 'true')
-    es_schema_path =os.getenv('ES_SCHEMA', 'es_schema.json')
+    es_schema_path = os.getenv('ES_SCHEMA', 'es_schema.json')
 
     use_redis = os.getenv('USE_REDIS', 'False') in ('True', 'true')
     redis_host = os.getenv('REDIS_HOST', 'localhost')

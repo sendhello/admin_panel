@@ -13,6 +13,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='personfilmwork',
             name='role',
-            field=models.TextField(choices=[('actor', 'actor'), ('writer', 'writer'), ('director', 'director')], null=True, verbose_name='profession'),
+            field=models.TextField(
+                choices=[
+                    ('actor', 'actor'), ('writer', 'writer'), ('director', 'director')
+                ],
+                null=True,
+                verbose_name='profession'
+            ),
         ),
     ]

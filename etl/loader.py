@@ -1,11 +1,9 @@
 import json
-import os
-from utils import backoff
-import requests
-from schemas.models import Movie
-from schemas.index import Index, IndexData
 import logging
 
+import requests
+from schemas import Index, IndexData, Movie
+from utils import backoff
 
 logger = logging.getLogger(__name__)
 

@@ -8,4 +8,4 @@ class MoviesConfig(AppConfig):
     verbose_name = _('movies')
 
     def ready(self):
-        from . import signals
+        from . import signals  # noqa

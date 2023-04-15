@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
-from uuid import UUID
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from uuid import UUID
+
+from pydantic import BaseModel
 
 
 class MoviesType(str, Enum):

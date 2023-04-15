@@ -1,8 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-
-from library import SQLiteExtractor, PostgresSaver
+from library import PostgresSaver, SQLiteExtractor
 
 load_dotenv()
 

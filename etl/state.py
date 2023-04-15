@@ -1,6 +1,7 @@
 import abc
-from typing import Any
 import json
+from typing import Any
+
 from redis import Redis
 
 
