@@ -6,3 +6,4 @@ gevent==22.10.2
 psycopg2-binary==2.9.5
 django-extensions==3.2.1
 django-cors-headers==3.14.0
+pydantic==1.10.7
