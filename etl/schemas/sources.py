@@ -11,6 +11,12 @@ class MoviesType(str, Enum):
     TV_SHOW = 'tv_show'
 
 
+class RoleType(str, Enum):
+    ACTOR = 'actor'
+    WRITER = 'writer'
+    DIRECTOR = 'director'
+
+
 class SourceId(BaseModel):
     """Модель выгрузки IDs из БД.
     """
@@ -28,7 +34,7 @@ class SourceMovie(BaseModel):
     type: MoviesType
     created: datetime
     modified: datetime
-    role: str | None
+    role: RoleType | None
     person_id: UUID | None
     full_name: str | None
     genre_name: str | None

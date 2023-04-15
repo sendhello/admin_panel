@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from library.state import State
 from library.extractor import PostgresExtractor
 from typing import Iterator
-from schemas.db_data import SourceMovie
+from schemas.sources import SourceMovie
 from library.constants import extract_method_by_modified_type, state_name_map, ExtractObject
 
 logger = logging.getLogger(__name__)

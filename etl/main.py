@@ -5,9 +5,12 @@ from library.state import State, RedisStorage, JsonFileStorage
 from library.extractor import PostgresExtractor
 from datetime import datetime, timezone
 import time
+import json
 import logging
+from library.loader import ElasticsearchLoader
 from library.constants import StateName, extract_method_by_modified_type, state_name_map, ExtractObject
 from library.utils import get_updated_movies
+from library.transforator import Transformator
 
 
 load_dotenv()
@@ -24,6 +27,12 @@ if __name__ == '__main__':
         'host': os.getenv('DB_HOST', '127.0.0.1'),
         'port': os.getenv('DB_PORT', 5432),
     }
+
+    es_host = os.getenv('ES_HOST', '127.0.0.1')
+    es_port = os.getenv('ES_PORT', '9200')
+    es_ssl = os.getenv('ES_SSL', 'True') in ('True', 'true')
+    es_schema_path =os.getenv('ES_SCHEMA', 'es_schema.json')
+
     use_redis = os.getenv('USE_REDIS', 'False') in ('True', 'true')
     redis_host = os.getenv('REDIS_HOST', 'localhost')
     redis_port = int(os.getenv('REDIS_PORT', '6379'))
@@ -36,7 +45,12 @@ if __name__ == '__main__':
     else:
         storage = JsonFileStorage(json_storage_file)
 
+    with open(es_schema_path) as f:
+        es_schema = json.load(f)
+
     state = State(storage)
+    loader = ElasticsearchLoader(host=es_host, port=es_port, ssl=es_ssl)
+    loader.create_index(schema=es_schema)
 
     while True:
         state.set_state('start_time', datetime.now(timezone.utc).isoformat())
@@ -44,8 +58,10 @@ if __name__ == '__main__':
         with PostgresExtractor(dsn) as postgres_extractor:
             extract_objects = (ExtractObject.MOVIES, ExtractObject.PEOPLE, ExtractObject.GENRES)
             for extract_object in extract_objects:
-                for updated_movies in get_updated_movies(state, postgres_extractor, extract_object):
-                    print(len(updated_movies))
+                for source_movies in get_updated_movies(state, postgres_extractor, extract_object):
+                    transformator = Transformator(source_movies)
+                    movies = transformator.get_movies()
+                    loader.load_movies(movies)
 
         logger.info(f'Sleeping {sleep_time} sec...')
         time.sleep(sleep_time)

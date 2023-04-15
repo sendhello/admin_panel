@@ -9,7 +9,7 @@ from psycopg2.extras import DictCursor
 
 from library.sql import FILM_WORK_BY_IDS_SQL, FILM_WORK_BY_LAST_MODIFIED_SQL, PERSON_BY_LAST_MODIFIED_SQL, \
     GENRE_BY_LAST_MODIFIED_SQL, FILM_WORK_IDS_BY_PERSON_IDS_SQL, FILM_WORK_IDS_BY_GENRE_IDS_SQL
-from schemas.db_data import SourceMovie, SourceId
+from schemas.sources import SourceMovie, SourceId
 
 logger = logging.getLogger(__name__)
 

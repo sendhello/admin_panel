@@ -103,7 +103,7 @@ class GenreFilmWork(UUIDMixin):
 
 class RoleType(models.TextChoices):
     ACTOR = 'actor', _('actor')
-    PRODUCER = 'producer', _('producer')
+    WRITER = 'writer', _('writer')
     DIRECTOR = 'director', _('director')
 
 
