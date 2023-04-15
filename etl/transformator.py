@@ -28,17 +28,23 @@ class Transformator:
                 movies[movie_id].director = source_movie.full_name
 
             elif source_movie.role == RoleType.ACTOR:
-                movies[movie_id].actors_names.append(source_movie.full_name)
-                movies[movie_id].actors.append(Person(
-                    id=str(source_movie.person_id),
-                    name=source_movie.full_name,
-                ))
+                person_id = str(source_movie.person_id)
+                full_name = source_movie.full_name
+                if person_id not in {actor.id for actor in movies[movie_id].actors}:
+                    movies[movie_id].actors_names.append(full_name)
+                    movies[movie_id].actors.append(Person(
+                        id=person_id,
+                        name=full_name,
+                    ))
 
             elif source_movie.role == RoleType.WRITER:
-                movies[movie_id].writers_names.append(source_movie.full_name)
-                movies[movie_id].writers.append(Person(
-                    id=str(source_movie.person_id),
-                    name=source_movie.full_name,
-                ))
+                person_id = str(source_movie.person_id)
+                full_name = source_movie.full_name
+                if person_id not in {writer.id for writer in movies[movie_id].writers}:
+                    movies[movie_id].writers_names.append(full_name)
+                    movies[movie_id].writers.append(Person(
+                        id=person_id,
+                        name=full_name,
+                    ))
 
         return list(movies.values())

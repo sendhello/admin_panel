@@ -1,16 +1,15 @@
 import os
 from redis import Redis
 from dotenv import load_dotenv
-from library.state import State, RedisStorage, JsonFileStorage
-from library.extractor import PostgresExtractor
+from state import State, RedisStorage, JsonFileStorage
+from extractor import PostgresExtractor
 from datetime import datetime, timezone
 import time
 import json
 import logging
-from library.loader import ElasticsearchLoader
-from library.constants import StateName, extract_method_by_modified_type, state_name_map, ExtractObject
-from library.utils import get_updated_movies
-from library.transforator import Transformator
+from loader import ElasticsearchLoader
+from constants import StateName, extract_method_by_modified_type, state_name_map, ExtractObject
+from transformator import Transformator
 
 
 load_dotenv()
@@ -56,12 +55,10 @@ if __name__ == '__main__':
         state.set_state('start_time', datetime.now(timezone.utc).isoformat())
 
         with PostgresExtractor(dsn) as postgres_extractor:
-            extract_objects = (ExtractObject.MOVIES, ExtractObject.PEOPLE, ExtractObject.GENRES)
-            for extract_object in extract_objects:
-                for source_movies in get_updated_movies(state, postgres_extractor, extract_object):
-                    transformator = Transformator(source_movies)
-                    movies = transformator.get_movies()
-                    loader.load_movies(movies)
+            for source_movies in postgres_extractor.get_updated_movies(state):
+                transformator = Transformator(source_movies)
+                movies = transformator.get_movies()
+                loader.load_movies(movies)
 
         logger.info(f'Sleeping {sleep_time} sec...')
         time.sleep(sleep_time)

@@ -1,6 +1,6 @@
 import json
 import os
-from library.backoff import backoff
+from utils import backoff
 import requests
 from schemas.models import Movie
 from schemas.index import Index, IndexData

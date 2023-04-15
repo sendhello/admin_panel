@@ -112,6 +112,8 @@ services:
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
     depends_on:
       - sqlite_to_postgres
     ports:
@@ -122,6 +124,7 @@ services:
 volumes:
   postgres_data:
   static_volume:
+  elasticsearch_data:
 
 networks:
   network:

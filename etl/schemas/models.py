@@ -17,7 +17,7 @@ class Movie(BaseModel):
     genre: str | None
     title: str
     description: str | None
-    director: str | None
+    director: str = Field(default_factory=str)
     actors_names: list[str] = Field(default_factory=list)
     writers_names: list[str] = Field(default_factory=list)
     actors: list[Person] = Field(default_factory=list)

@@ -1,13 +1,17 @@
 import logging
 import os
 from typing import Any, Iterator
-from library.backoff import backoff
+from utils import backoff
 import psycopg2
 from psycopg2.extensions import connection as _connection
 from psycopg2.extensions import cursor as _cursor
 from psycopg2.extras import DictCursor
-
-from library.sql import FILM_WORK_BY_IDS_SQL, FILM_WORK_BY_LAST_MODIFIED_SQL, PERSON_BY_LAST_MODIFIED_SQL, \
+import logging
+from datetime import datetime, timezone
+from state import State
+from typing import Iterator
+from constants import extract_method_by_modified_type, state_name_map, ExtractObject
+from sql import FILM_WORK_BY_IDS_SQL, FILM_WORK_BY_LAST_MODIFIED_SQL, PERSON_BY_LAST_MODIFIED_SQL, \
     GENRE_BY_LAST_MODIFIED_SQL, FILM_WORK_IDS_BY_PERSON_IDS_SQL, FILM_WORK_IDS_BY_GENRE_IDS_SQL
 from schemas.sources import SourceMovie, SourceId
 
@@ -56,7 +60,7 @@ class PostgresExtractor:
         self.connection.close()
 
     def _run_sql(self, sql: str) -> Iterator[list[Any]]:
-        load_package_size = int(os.getenv('LOAD_PACKAGE_SIZE', 10))
+        load_package_size = int(os.getenv('LOAD_PACKAGE_SIZE', 5000))
         with Cursor(self.connection) as cursor:
             if cursor is None:
                 return []
@@ -115,3 +119,26 @@ class PostgresExtractor:
             for film_work_ids in self._get_film_work_ids(FILM_WORK_IDS_BY_GENRE_IDS_SQL, people):
                 for film_work in self._get_film_work_with_ids(film_work_ids):
                     yield film_work
+
+    def get_updated_movies(self, state: State) -> Iterator[list[SourceMovie]]:
+        """Процесс обновления индексов.
+        """
+        for obj in list(ExtractObject):
+            state_name = state_name_map.get(obj)
+            last_modified = state.get_state(state_name)
+
+            if obj == ExtractObject.MOVIES and last_modified is None:
+                state.set_state(state_name, datetime.fromtimestamp(0, tz=timezone.utc).isoformat())
+                last_modified = state.get_state(state_name)
+
+            if last_modified is not None:
+                logger.info(f"Check update {obj} after {last_modified}")
+                extract_method = getattr(self, extract_method_by_modified_type[state_name])
+
+                for data in extract_method(last_modified):
+                    yield data
+
+                    if datetime.fromisoformat(last_modified) < data[-1].modified:
+                        state.set_state(state_name, data[-1].modified.isoformat())
+
+            state.set_state(state_name, state.get_state('start_time'))
