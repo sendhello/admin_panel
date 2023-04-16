@@ -10,24 +10,6 @@ from .local_typing import TABLES_TYPE
 logger = logging.getLogger(__name__)
 
 
-class Cursor:
-    def __init__(self, conn: _connection):
-        self.connection = conn
-        self.cursor = None
-
-    def __enter__(self) -> _cursor:
-        if self.connection:
-            self.cursor = self.connection.cursor()
-
-        return self.cursor
-
-    def __exit__(self, *args, **kwargs) -> None:
-        if self.cursor is None:
-            return None
-
-        self.cursor.close()
-
-
 class PostgresSaver:
     def __init__(self, dsn):
         self.dsn = dsn
@@ -55,7 +37,7 @@ class PostgresSaver:
 
         table_fields = tuple(table_data[0].__dict__)
         data = tuple(tuple(map(lambda x: getattr(row, x), table_fields)) for row in table_data)
-        with Cursor(self.connection) as cursor:
+        with self.connection.cursor() as cursor:
             if cursor is None:
                 return None
 

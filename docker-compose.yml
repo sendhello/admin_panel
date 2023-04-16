@@ -10,9 +10,9 @@ services:
     ports:
       - "5435:5432"
     environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: 123qwe
-      POSTGRES_DB: movies_database
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     healthcheck:
@@ -28,17 +28,17 @@ services:
     expose:
       - "8000"
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: movies_database
-      DB_USER: app
-      DB_PASSWORD: 123qwe
-      SECRET_KEY: django-insecure-5twg4p+jh)vqc3o4nrcsw24^*(o4(ftexu6ly3jr@z2w*kql&7
-      DEBUG: False
-      ALLOWED_HOSTS: '*'
-      DJANGO_SUPERUSER_USERNAME: admin
-      DJANGO_SUPERUSER_PASSWORD: admin
-      DJANGO_SUPERUSER_EMAIL: example@example.com
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+      DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
     volumes:
       - static_volume:/opt/app/static
     depends_on:
@@ -58,13 +58,13 @@ services:
     hostname: sqlite_to_postgres
     build: ./sqlite_to_postgres
     environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: movies_database
-      DB_USER: app
-      DB_PASSWORD: 123qwe
-      SQLITE_DB: db.sqlite
-      LOAD_PACKAGE_SIZE: 50
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SQLITE_DB: ${SQLITE_DB}
+      STP_LOAD_PACKAGE_SIZE: ${STP_LOAD_PACKAGE_SIZE}
     volumes:
       - ./sqlite_to_postgres/db.sqlite:/opt/app/db.sqlite
     depends_on:
@@ -78,18 +78,18 @@ services:
     hostname: etl
     build: ./etl
     environment:
-      DEBUG: True
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: movies_database
-      DB_USER: app
-      DB_PASSWORD: 123qwe
-      ES_HOST: elasticsearch
-      ES_SSL: False
-      USE_REDIS: True
-      REDIS_HOST: redis
-      LOAD_PACKAGE_SIZE: 5000
-      SLEEP_TIME: 30
+      DEBUG: ${DEBUG}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      ES_HOST: ${ES_HOST}
+      ES_SSL: ${ES_SSL}
+      USE_REDIS: ${USE_REDIS}
+      REDIS_HOST: ${REDIS_HOST}
+      LOAD_PACKAGE_SIZE: ${LOAD_PACKAGE_SIZE}
+      SLEEP_TIME: ${SLEEP_TIME}
     volumes:
       - ./sqlite_to_postgres/db.sqlite:/opt/app/db.sqlite
     depends_on:
@@ -117,9 +117,9 @@ services:
     hostname: swagger
     image: swaggerapi/swagger-ui
     environment:
-      SWAGGER_JSON: /swagger.yaml
-      SWAGGER_HOST: nginx
-      SWAGGER_PORT: 80
+      SWAGGER_JSON: ${SWAGGER_JSON}
+      SWAGGER_HOST: ${SWAGGER_JSON}
+      SWAGGER_PORT: ${SWAGGER_JSON}
     volumes:
       - ./openapi.yaml:/swagger.yaml
     depends_on:
@@ -134,8 +134,8 @@ services:
     hostname: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
     environment:
-      discovery.type: single-node
-      xpack.security.enabled: false
+      discovery.type: ${DISCOVERY_TYPE}
+      xpack.security.enabled: ${XPACK_SECURITY_ENABLED}
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     depends_on:
@@ -150,7 +150,7 @@ services:
     hostname: redis
     image: redis:7.2-rc1
     environment:
-      ALLOW_EMPTY_PASSWORD: yes
+      ALLOW_EMPTY_PASSWORD: ${ALLOW_EMPTY_PASSWORD}
     volumes:
       - redis_data:/data
     ports:

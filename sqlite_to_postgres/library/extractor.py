@@ -50,7 +50,7 @@ class SQLiteExtractor:
         self.connection.close()
 
     def _run_sql(self, sql: str) -> Iterator[list[sqlite3.Row]]:
-        load_package_size = int(os.environ.get('LOAD_PACKAGE_SIZE', 10))
+        load_package_size = int(os.environ.get('SQLITE_LOAD_PACKAGE_SIZE', 10))
         with Cursor(self.connection) as cursor:
             if cursor is None:
                 return []

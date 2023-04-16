@@ -1,14 +1,13 @@
 import logging
-import os
 from datetime import datetime, timezone
 from typing import Any, Iterator
 
 import psycopg2
-from constants import ExtractObject, extract_method_by_modified_type, state_name_map
-from psycopg2.extensions import connection as _connection
-from psycopg2.extensions import cursor as _cursor
 from psycopg2.extras import DictCursor
+
+from constants import ExtractObject, extract_method_by_modified_type, state_name_map
 from schemas import SourceId, SourceMovie
+from settings import settings
 from sql import (
     FILM_WORK_BY_IDS_SQL,
     FILM_WORK_BY_LAST_MODIFIED_SQL,
@@ -23,33 +22,15 @@ from utils import backoff
 logger = logging.getLogger(__name__)
 
 
-class Cursor:
-    def __init__(self, conn: _connection):
-        self.connection = conn
-        self.cursor = None
-
-    def __enter__(self) -> _cursor:
-        if self.connection:
-            self.cursor = self.connection.cursor()
-
-        return self.cursor
-
-    def __exit__(self, *args, **kwargs) -> None:
-        if self.cursor is None:
-            return None
-
-        self.cursor.close()
-
-
 class PostgresExtractor:
-    def __init__(self, dsn):
-        self.dsn = dsn
+    def __init__(self, conn_string):
+        self.conn_string = conn_string
         self.connection = None
 
     @backoff()
     def __enter__(self) -> 'PostgresExtractor':
         try:
-            self.connection = psycopg2.connect(**self.dsn, cursor_factory=DictCursor)
+            self.connection = psycopg2.connect(self.conn_string, cursor_factory=DictCursor)
             self.connection.autocommit = True
 
         except Exception as e:
@@ -65,15 +46,11 @@ class PostgresExtractor:
         self.connection.close()
 
     def _run_sql(self, sql: str) -> Iterator[list[Any]]:
-        load_package_size = int(os.getenv('LOAD_PACKAGE_SIZE', 5000))
-        with Cursor(self.connection) as cursor:
-            if cursor is None:
-                return []
-
+        with self.connection.cursor() as cursor:
             try:
                 cursor.execute(sql)
                 while True:
-                    data = cursor.fetchmany(load_package_size)
+                    data = cursor.fetchmany(settings.ETL_LOAD_PACKAGE_SIZE)
                     if not data:
                         break
 
