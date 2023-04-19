@@ -1,0 +1,168 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: postgres
+    hostname: postgres
+    image: postgres:15.2
+    networks:
+      - network
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U app -d movies_database" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  django:
+    container_name: django
+    hostname: django
+    build: ./movies_admin
+    expose:
+      - "8000"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+      DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
+    volumes:
+      - static_volume:/opt/app/static
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/admin" ]
+      interval: 60s
+      timeout: 10s
+      retries: 10
+      start_period: 5s
+
+  sqlite_to_postgres:
+    container_name: sqlite_to_postgres
+    hostname: sqlite_to_postgres
+    build: ./sqlite_to_postgres
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SQLITE_DB: ${SQLITE_DB}
+      STP_LOAD_PACKAGE_SIZE: ${STP_LOAD_PACKAGE_SIZE}
+    volumes:
+      - ./sqlite_to_postgres/db.sqlite:/opt/app/db.sqlite
+    depends_on:
+      django:
+        condition: service_healthy
+    networks:
+      - network
+
+  etl:
+    container_name: etl
+    hostname: etl
+    build: ./etl
+    environment:
+      DEBUG: ${DEBUG}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      ES_HOST: ${ES_HOST}
+      ES_SSL: ${ES_SSL}
+      USE_REDIS: ${USE_REDIS}
+      REDIS_HOST: ${REDIS_HOST}
+      LOAD_PACKAGE_SIZE: ${LOAD_PACKAGE_SIZE}
+      SLEEP_TIME: ${SLEEP_TIME}
+    volumes:
+      - ./sqlite_to_postgres/db.sqlite:/opt/app/db.sqlite
+    depends_on:
+      - sqlite_to_postgres
+    networks:
+      - network
+
+  nginx:
+    container_name: nginx
+    hostname: nginx
+    image: nginx:1.19.2
+    volumes:
+      - ./src/nginx.conf:/etc/nginx/nginx.conf
+      - ./src/configs:/etc/nginx/conf.d
+      - static_volume:/opt/app/static
+    depends_on:
+      - django
+    ports:
+      - "80:80"
+    networks:
+      - network
+
+  swagger:
+    container_name: swagger
+    hostname: swagger
+    image: swaggerapi/swagger-ui
+    environment:
+      SWAGGER_JSON: ${SWAGGER_JSON}
+      SWAGGER_HOST: ${SWAGGER_JSON}
+      SWAGGER_PORT: ${SWAGGER_JSON}
+    volumes:
+      - ./openapi.yaml:/swagger.yaml
+    depends_on:
+      - django
+    ports:
+      - "8080:8080"
+    networks:
+      - network
+
+  elasticsearch:
+    container_name: elasticsearch
+    hostname: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    environment:
+      discovery.type: ${DISCOVERY_TYPE}
+      xpack.security.enabled: ${XPACK_SECURITY_ENABLED}
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    depends_on:
+      - sqlite_to_postgres
+    ports:
+      - "9200:9200"
+    networks:
+      - network
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:7.2-rc1
+    environment:
+      ALLOW_EMPTY_PASSWORD: ${ALLOW_EMPTY_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6377:6379"
+    networks:
+      - network
+
+volumes:
+  postgres_data:
+  static_volume:
+  elasticsearch_data:
+  redis_data:
+
+networks:
+  network:

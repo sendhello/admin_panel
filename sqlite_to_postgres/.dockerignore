@@ -1,0 +1,8 @@
+.gitignore
+.dockerignore
+requirements-dev.txt
+Dockerfile
+README.md
+db.sqlite
+
+tests
